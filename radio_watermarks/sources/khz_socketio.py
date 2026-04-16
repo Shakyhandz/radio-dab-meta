@@ -22,14 +22,39 @@ WS_URL_FMT = f"wss://{HOST}/socket.io/?EIO=3&transport=websocket&sid={{sid}}"
 # Known mapping. Expand as stations are identified by listening.
 # (slug, display_name, operator, group)
 KHZ_CHANNEL_META: dict[str, tuple[str, str, str, str]] = {
-    "94": ("khz_star_fm", "Star FM", "viaplay", "suspect"),
+    # All channels are Viaplay Radio. Mappings confirmed by matching
+    # now-playing songs across two passes against viaplayradio.se/radiokanaler.
+    "2":  ("khz_bandit_rock",        "Bandit Rock",         "viaplay", "suspect"),
+    "3":  ("khz_rix_fm",             "Rix FM",              "viaplay", "suspect"),
+    "4":  ("khz_lugna_favoriter",    "Lugna Favoriter",     "viaplay", "suspect"),
+    "6":  ("khz_power_hit_radio",    "Power Hit Radio",     "viaplay", "suspect"),
+    "7":  ("khz_bandit_classic",     "Bandit Classic Rock", "viaplay", "suspect"),
+    "8":  ("khz_bandit_metal",       "Bandit Metal",        "viaplay", "suspect"),
+    "9":  ("khz_rix_fm_fresh",       "Rix FM Fresh",        "viaplay", "suspect"),
+    "10": ("khz_bandit_alternative", "Bandit Alternative",  "viaplay", "suspect"),
+    "11": ("khz_power_club",         "Power Club",          "viaplay", "suspect"),
+    "12": ("khz_power_street",       "Power Street",        "viaplay", "suspect"),
+    "13": ("khz_soul_classics",      "Soul Classics",       "viaplay", "suspect"),
+    "14": ("khz_gamla_favoriter",    "Gamla Favoriter",     "viaplay", "suspect"),
+    "20": ("khz_disco_54",           "Disco 54",            "viaplay", "suspect"),
+    "21": ("khz_electro_lounge",     "Electro Lounge",      "viaplay", "suspect"),
+    "22": ("khz_go_country",         "Go Country",          "viaplay", "suspect"),
+    "25": ("khz_skargardsradion",    "Skärgårdsradion",     "viaplay", "suspect"),
+    "31": ("khz_julkanalen",         "Julkanalen",          "viaplay", "suspect"),
+    "32": ("khz_sonic",              "Sonic",               "viaplay", "suspect"),
+    "56": ("khz_radio_rainbow",      "Radio Rainbow",       "viaplay", "suspect"),
+    "64": ("khz_bandit_ballads",     "Bandit Ballads",      "viaplay", "suspect"),
+    "72": ("khz_guldkanalen",        "Guldkanalen",         "viaplay", "suspect"),
+    "73": ("khz_dansbandskanalen",   "Dansbandskanalen",    "viaplay", "suspect"),
+    "94": ("khz_star_fm",            "Star FM",             "viaplay", "suspect"),
+    "95": ("khz_hitmix_90s",         "HitMix 90's",         "viaplay", "suspect"),
 }
 
 
 def channel_meta(channel_id: str) -> tuple[str, str, str, str]:
     if channel_id in KHZ_CHANNEL_META:
         return KHZ_CHANNEL_META[channel_id]
-    return (f"khz_{channel_id}", f"khz Ch {channel_id}", "viaplay", "suspect")
+    return (f"khz_{channel_id}", f"khz Ch {channel_id}", "unknown", "suspect")
 
 
 async def _handshake() -> tuple[str, float]:

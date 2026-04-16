@@ -75,7 +75,7 @@ def main() -> None:
 
     print(f"\n=== Non-ASCII / weird chars by channel ===")
     for ch in sorted(per_channel_counts):
-        weird_chars = Counter(c for c, n in per_channel_counts[ch].items() if ord(c) > 127)
+        weird_chars = Counter({c: n for c, n in per_channel_counts[ch].items() if ord(c) > 127})
         if not weird_chars:
             continue
         print(f"\n  {ch} (top {args.top}):")
