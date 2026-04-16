@@ -32,5 +32,6 @@ __pycache__/
 
 # --- ephemeral sample/capture data ---
 viaplay_websocket_sample.txt
+pass*_*.txt
 *.dab
 *.eti
