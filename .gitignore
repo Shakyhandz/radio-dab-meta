@@ -1,0 +1,36 @@
+# --- secrets / credentials ---
+local.settings.json
+*.env
+.env
+.env.*
+*.pem
+*.key
+*_rsa
+*.pfx
+secrets.json
+credentials.json
+
+# --- build/deploy artifacts ---
+deploy.zip
+*.egg-info/
+dist/
+build/
+bin/
+obj/
+
+# --- editor / tooling ---
+.vscode/
+.idea/
+.claude/
+.azure/
+
+# --- python ---
+__pycache__/
+*.pyc
+.venv/
+.python-version
+
+# --- ephemeral sample/capture data ---
+viaplay_websocket_sample.txt
+*.dab
+*.eti
