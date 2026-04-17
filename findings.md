@@ -108,5 +108,5 @@ All channels stay within the ETSI DLS ceiling (≤256 chars). Longest artist fie
 ## Caveats
 
 - Sample size modest: ~7k rows, ~24 hours of Viaplay data. One C1-char occurrence proves the pipeline *can* emit corrupt metadata; estimating frequency requires a longer run.
-- No Bauer sample in the collected dataset — we originally assumed khz.se was multi-operator infrastructure, but all identified channels are Viaplay. A separate control-comparison against a Bauer-fed dataset (e.g. via `radioplay.se` or directly per-station Triton endpoints, once mount names are found) would strengthen the "Viaplay-specific" conclusion.
+- Bauer collection is now active (10 stations via `listenapi.planetradio.co.uk`) as a secondary control group. Once enough Bauer rows accumulate, re-run the analysis with three groups (SR / Bauer / Viaplay) to test whether C1-char and bidi-char anomalies are Viaplay-specific or common to commercial operators.
 - The current hypothesis predicts the crash can occur on any Viaplay station, not just Star FM. Next real-world crash: note the station on the display and check whether the just-played track on that channel carried a C1 char or other anomaly in the Azure table.
