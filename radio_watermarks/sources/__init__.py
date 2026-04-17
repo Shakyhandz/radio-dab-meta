@@ -1,4 +1,5 @@
 from radio_watermarks.channels import Channel
+from radio_watermarks.sources.bauer_planetradio import fetch_bauer
 from radio_watermarks.sources.sr import fetch_sr
 from radio_watermarks.sources.triton import fetch_triton
 from radio_watermarks.sources.http_json import fetch_http_json
@@ -10,6 +11,8 @@ def fetch(channel: Channel) -> list[Play]:
         return fetch_sr(channel)
     if channel.source == "triton":
         return fetch_triton(channel)
+    if channel.source == "bauer":
+        return fetch_bauer(channel)
     if channel.source == "http_json":
         return fetch_http_json(channel)
     raise ValueError(f"unknown source: {channel.source}")
