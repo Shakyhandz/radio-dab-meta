@@ -21,7 +21,8 @@ def _parse_dotnet_date(s: str | None) -> datetime | None:
 def fetch_sr(channel: Channel) -> list[Play]:
     cid = channel.config["channel_id"]
     url = f"https://api.sr.se/api/v2/playlists/rightnow?channelid={cid}&format=json"
-    r = httpx.get(url, timeout=10)
+    headers = {"User-Agent": "radio-watermarks/0.1 (metadata research)"}
+    r = httpx.get(url, timeout=10, headers=headers)
     r.raise_for_status()
     data = r.json()
     plays: list[Play] = []
