@@ -34,15 +34,25 @@ If the encoder signals one charset but sends bytes in another, or emits a malfor
 
 ## What's in this repo
 
-Collection is split by source:
+Collection is split by three operator sources:
 
-- **Sveriges Radio** (public broadcaster, control group): polled per-channel via `https://api.sr.se/api/v2/playlists/rightnow` — `radio_watermarks/sources/sr.py`.
-- **Commercial stations incl. Star FM** (suspect group): captured from the Socket.IO stream at `wss://beat.khz.se/socket.io/` — `radio_watermarks/sources/khz_socketio.py`. Channel `94` = Star FM (confirmed).
-- Storage: Azure Table Storage `plays` table — `radio_watermarks/storage.py`.
+| Source | Operator | Group | Method | Frequency |
+|--------|----------|-------|--------|-----------|
+| Sveriges Radio (6 ch) | SR | control | REST `api.sr.se` | 1/min |
+| Bauer Media (10 ch) | Bauer | control | REST `listenapi.planetradio.co.uk` | 1/min |
+| Viaplay Radio (23 ch) | Viaplay | suspect | Socket.IO `wss://beat.khz.se` | continuous (9m20s/10m) |
+
+All 23 Viaplay channels were identified by matching now-playing data on `viaplayradio.se/radiokanaler/` against collected rows in two passes. Full mapping in `radio_watermarks/sources/khz_socketio.py`.
+
+- `radio_watermarks/sources/sr.py` — Sveriges Radio API.
+- `radio_watermarks/sources/bauer_planetradio.py` — Bauer Planet Radio API.
+- `radio_watermarks/sources/khz_socketio.py` — Viaplay Socket.IO client + channel map.
+- `radio_watermarks/storage.py` — Azure Table Storage writer with dedup.
 - Hosting: Azure Functions on Consumption plan (`function_app.py`) with two timers:
-  - `poll_channels` — every 1 min (SR).
-  - `collect_khz` — every 10 min, holds WebSocket for ~9m20s.
+  - `poll_channels` — every 1 min (SR + Bauer per-channel HTTP).
+  - `collect_khz` — every 10 min, holds WebSocket for ~9m20s (Viaplay).
 - Analysis: `radio_watermarks/analyze.py` — char histogram, control-char scan, compares suspect vs control groups.
+- Results: `findings.md` — anomalies found so far and hypothesis status.
 
 ### Azure resources (subscription: Labs)
 
