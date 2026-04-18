@@ -70,6 +70,23 @@ All anomaly-carrying channels (Soul Classics and Power Club) are Viaplay Radio, 
 
 This is also consistent with the user report that the crash occurs "on some channels" and feels operator-correlated: the operator is Viaplay, but which channel crashes depends on which track Viaplay's pipeline recently mangled.
 
+### Live observation — 2026-04-18 crash on Star FM
+
+User crash report: MG Marvel DAB+ died at ~15:40 local (CEST = UTC+2) on Star FM. Radio recovered ~15 minutes later while Gyllene Tider was playing. Matched against `khz_star_fm` rows for 2026-04-18 13:00Z–14:30Z (17 rows in window):
+
+| Local | Artist — Title | Anomaly |
+|-------|----------------|---------|
+| 15:30:19 | Wham! — Freedom | — |
+| **15:34:50** | **Snap — Rhythm Is A Dancer** | **— (crash during this track, `run_length=221s` → ~15:38:31)** |
+| 15:41:24 | Tina Turner — What's Love Got To Do With It | — |
+| 15:51:46 | Gyllene Tider — ` Leva Livet` | leading 0x20 space (harmless) |
+| 15:55:17 | Kim Wilde — Cambodia | — |
+| 16:04:30 | Kate Ryan — Désenchantée | `é` = `c3 a9`, valid UTF-8 |
+
+Full-payload scan (all 17 rows, entire Socket.IO envelope including `album_name`, `cover_art`, `genre`, `search_title`, ids): zero C1 controls, zero bidi-format chars, zero lone surrogates, zero malformed UTF-8.
+
+**Interpretation.** The khz.se API row for the track playing at crash time was clean. That is a genuine counter-data-point: the hypothesis that every crash correlates with Anomaly-1-style C1 corruption in the captured metadata is not supported by this incident. Either (a) corruption entered downstream of khz.se, (b) the trigger is in a metadata channel we do not capture, or (c) the trigger is not metadata at all. See **Future research** below.
+
 ## Field lengths
 
 All channels stay within the ETSI DLS ceiling (≤256 chars). Longest artist field observed: 133 chars on `sr_p2` (classical multi-composer credit). No length-based suspects.
@@ -110,3 +127,42 @@ All channels stay within the ETSI DLS ceiling (≤256 chars). Longest artist fie
 - Sample size modest: ~7k rows, ~24 hours of Viaplay data. One C1-char occurrence proves the pipeline *can* emit corrupt metadata; estimating frequency requires a longer run.
 - Bauer collection is now active (10 stations via `listenapi.planetradio.co.uk`) as a secondary control group. Once enough Bauer rows accumulate, re-run the analysis with three groups (SR / Bauer / Viaplay) to test whether C1-char and bidi-char anomalies are Viaplay-specific or common to commercial operators.
 - The current hypothesis predicts the crash can occur on any Viaplay station, not just Star FM. Next real-world crash: note the station on the display and check whether the just-played track on that channel carried a C1 char or other anomaly in the Azure table.
+
+## Future research
+
+The 2026-04-18 live observation — a real crash on a row with no detectable corruption in our capture — means the C1-character story covers at most *some* crashes. Alternatives worth investigating, in priority order:
+
+### 1. Corruption enters downstream of the khz.se API
+
+khz.se's Socket.IO feed and the DAB+ broadcast encoder are two branches off Viaplay's upstream metadata. Stages that could introduce malformed bytes after the API fork:
+
+- **Charset-flag mismatch.** DLS declares one of ISO 6937 / ISO 8859-1 / UCS-2 / UTF-8 in its header byte (see ReadMe.md §"Character encoding"). If the encoder declares UTF-8 but ships Latin-1 (or vice versa), valid source bytes become malformed on-air while looking clean in our capture.
+- **Mid-codepoint chunking.** A multi-byte UTF-8 character split across two 128-byte DLS segments leaves each segment internally malformed even when the source string is fine.
+- **Malformed DLS+ tag headers.** A tag whose declared length exceeds the payload, or a zero-length `ITEM.TITLE`, could crash a strict parser.
+
+Directly addressed by the RTL-SDR path already scoped in **ReadMe.md §"Next step: capture real DAB+ DLS bytes"** (Phases A–E). After today's observation this is the priority next step — it is the only way to compare on-air bytes against API bytes for the same track.
+
+### 2. Trigger is in a metadata stream we don't capture
+
+DAB+ carries more than DLS:
+
+- **MOT Slideshow (SLS).** Album art shipped over MOT. A bad JPEG header, oversized file, or unexpected MIME type can crash an image decoder. We only record a `cover_art` *filename*; the broadcast ships the actual binary, which we never see.
+- **Journaline / EPG / SPI.** Structured sidebands, often XML.
+- **PAD framing.** Byte-level PAD headers around DLS and SLS — corruption here never touches a text field.
+
+welle.io can dump SLS binaries and raw PAD alongside DLS — extend Phase D to save both.
+
+### 3. Not metadata at all — audio codec
+
+DAB+ audio is HE-AAC v2 (AAC-LC + SBR + PS). Specific frames — SBR parameter switches, PS mode changes, DSE payloads — have crashed decoder implementations in the field. A test: if the *same specific recording* of "Rhythm Is A Dancer" crashes the MG Marvel again on its next playout (on any Viaplay station), the audio chain becomes a stronger suspect than the metadata chain.
+
+### 4. Signal / environmental
+
+MG Marvel firmware could crash on low SNR, a multiplex reconfiguration event, or out-of-order frame sequences. Partial check without SDR hardware: do crashes correlate with specific road stretches / times of day independent of station and track?
+
+### Evidence to collect on the next crash
+
+- **Ensemble name / frequency / block** shown on the MG display (pins the mux for welle.io — ReadMe.md §Phase C).
+- **Station name** as displayed (confirms operator).
+- **Time to the minute** (for table-storage lookup and SDR log alignment).
+- **Location and signal bars** if visible (for hypothesis 4).
