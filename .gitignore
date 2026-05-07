@@ -9,6 +9,7 @@ local.settings.json
 *.pfx
 secrets.json
 credentials.json
+.placeholders.local.md
 
 # --- build/deploy artifacts ---
 deploy.zip

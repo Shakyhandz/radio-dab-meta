@@ -6,7 +6,7 @@ Swedish DAB+ radio metadata collector. Polls "now playing" song metadata from th
 
 ## Architecture
 
-- **Azure Functions** (Python 3.12, Linux Consumption plan) in resource group `<RESOURCE_GROUP>`, subscription `Labs` (`<AZURE_SUBSCRIPTION_ID>`), region `swedencentral`.
+- **Azure Functions** (Python 3.12, Linux Consumption plan) in resource group `<RESOURCE_GROUP>`, subscription `Labs` (`<AZURE_SUBSCRIPTION_ID>`), region `swedencentral`. (See `.placeholders.local.md` for real values.)
 - **Azure Table Storage** (`<STORAGE_ACCOUNT>`, table `plays`): PartitionKey = channel slug, RowKey = `{starts_at}_{hash(artist|title)}`.
 - **Two timer triggers** in `function_app.py`:
   - `poll_channels` (every 1 min): SR via `api.sr.se` + Bauer via `listenapi.planetradio.co.uk`.

@@ -61,6 +61,8 @@ All 23 Viaplay channels were identified by matching now-playing data on `viaplay
 - Function App `<FUNCTION_APP>`
 - Application Insights `<APP_INSIGHTS>`
 
+(Real names are kept locally in `.placeholders.local.md`, which is gitignored.)
+
 ### Caveat on web-sourced data
 
 The web APIs normalize text to UTF-8 server-side. The DLS bytes the car radio actually receives may differ. If the web-data hypothesis survives, the next step is capturing real DAB+ bytes with an RTL-SDR.
